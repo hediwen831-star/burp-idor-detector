@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  项目级 Maven 配置。
+
+  为什么放在项目里而不是改用户的 ~/.m2/settings.xml：
+  构建配置属于项目的一部分，应该跟着仓库走 ——
+  别人 clone 下来直接用，不需要先改自己的全局配置。
+
+  用法：
+      mvn -s maven-settings.xml clean package
+
+  内容说明：
+    · localRepository 复用本机已有的仓库目录，避免重复下载依赖
+    · 用阿里云公共仓库镜像加速（国内直连 Maven Central 很慢）
+    · 不需要代理：阿里云镜像已收录 Burp Montoya API
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                              https://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+  <localRepository>E:/dev/maven-repository</localRepository>
+
+  <mirrors>
+    <mirror>
+      <id>aliyun-public</id>
+      <name>Aliyun Public Repository</name>
+      <url>https://maven.aliyun.com/repository/public</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+  </mirrors>
+
+</settings>

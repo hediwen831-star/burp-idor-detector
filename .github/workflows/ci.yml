@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: 编译与测试 (JDK ${{ matrix.java }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # 21 是当前 LTS，也是本插件的最低要求（用了 record / switch 表达式等特性）
+        java: ["21"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: temurin
+          cache: maven
+
+      # 注意：这里【不能】加 -s maven-settings.xml
+      #
+      # 那个文件里配了 Windows 本机路径的 localRepository，
+      # 在 Linux runner 上会直接失败。它只是给国内网络环境加速用的本机配置，
+      # CI 直连 Maven Central 本来就快，不需要镜像。
+      - name: 编译并运行测试
+        run: mvn -B clean verify
+
+      - name: 检查 jar 产物
+        run: |
+          echo "产物列表："
+          ls -la target/*.jar
+          echo
+          echo "jar 内容（应该只含插件自己的类）："
+          jar tf target/*.jar
+          echo
+          # 关键检查：Montoya API 是 provided scope，绝不能被打进 jar
+          # 打进去会导致加载时与 Burp 自带的 API 冲突
+          if jar tf target/*.jar | grep -q "^burp/api/"; then
+            echo "::error::jar 中包含了 Burp Montoya API —— 这会与宿主冲突，检查 pom 的 provided scope"
+            exit 1
+          fi
+          echo "OK：未打包 Burp API"
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: idor-detector-jar-jdk${{ matrix.java }}
+          path: target/*.jar
+          if-no-files-found: error
+
+      - name: 测试报告摘要
+        if: always()
+        run: |
+          if [ -d target/surefire-reports ]; then
+            echo "## 测试结果" >> $GITHUB_STEP_SUMMARY
+            grep -h "Tests run" target/surefire-reports/*.txt | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY || true
+          fi

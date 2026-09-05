@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.hediwen.burp</groupId>
+  <artifactId>idor-detector</artifactId>
+  <version>0.1.0</version>
+  <packaging>jar</packaging>
+
+  <name>Burp IDOR Detector</name>
+  <description>越权（IDOR）自动化检测插件 —— 用第二身份重放请求并对比响应</description>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <!-- Burp Montoya API 版本。
+         选这个版本是因为它是 2026 年最新的稳定版，且 Montoya API 在
+         2024 之后基本稳定，升级通常不会有破坏性变更。 -->
+    <montoya.version>2026.7</montoya.version>
+  </properties>
+
+  <dependencies>
+    <!--
+      Montoya API 用 provided scope：
+      Burp 运行时自带这个 API，打包进插件会与宿主冲突。
+      这是 Burp 扩展开发的硬性约定。
+    -->
+    <dependency>
+      <groupId>net.portswigger.burp.extensions</groupId>
+      <artifactId>montoya-api</artifactId>
+      <version>${montoya.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!--
+      刻意不引入任何其他依赖。
+      Burp 扩展跑在用户的 Burp 进程里，多一个依赖就多一份
+      版本冲突和体积负担。JSON 解析、HTTP 客户端这些 Burp 都提供了，
+      其余用 JDK 标准库足够。
+    -->
+
+    <!--
+      测试依赖：test scope，不会进入 jar。
+      核心逻辑（参数识别、响应对比）是纯函数，不依赖 Burp 运行时，
+      所以可以脱离 Burp 单独测 —— 这一点很重要：
+      插件的行为如果只能在 Burp 里手工验证，就等于没有回归保护。
+    -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.11.4</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>idor-detector-${project.version}</finalName>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <release>21</release>
+          <!-- 保留参数名，Montoya 的某些 API 在反射时会用到 -->
+          <parameters>true</parameters>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.1</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

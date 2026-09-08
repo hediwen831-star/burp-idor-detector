@@ -27,6 +27,101 @@ Java 21 · Burp Montoya API 2026.7 · 零第三方依赖 · 单 jar 即插即用
 
 ---
 
+## 检测流程
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant B as Burp 流量
+    participant P as 插件
+    participant S as 目标服务端
+
+    B->>P: 捕获真实请求<br/>（身份 A，id=1001）
+    Note over P: 识别候选参数<br/>参数名 + 值形态双维度<br/>排除分页/时间戳等噪声
+
+    P->>S: ① 基准请求（身份 A，id=1001）
+    S-->>P: R0
+
+    P->>S: ② 换第二身份重放（身份 B，id=1001）
+    S-->>P: R1
+
+    P->>S: ③ 对照请求（身份 B，id=不存在的值）
+    S-->>P: R2
+
+    Note over P: 先标准化（去 CSRF token / 时间戳 / traceId）<br/>再算 5-gram Jaccard 相似度 + 状态码加权
+
+    alt R1 ≈ R0 且 R2 ≉ R0
+        P->>B: 报「疑似越权」（High / Firm）
+    else R1 ≈ R0 且 R2 ≈ R0
+        P-->>P: 通配响应 → 丢弃（这一步挡掉的就是误报）
+    else R1 ≉ R0
+        P-->>P: 权限校验有效 → 不报
+    end
+```
+
+图中绿色的判断分支是全部价值所在 —— 下面详细说。
+
+---
+
+## 模块结构
+
+```mermaid
+flowchart TB
+    subgraph HOST["Burp 运行时"]
+        API["MontoyaApi"]
+    end
+
+    subgraph PLUGIN["插件（全部在 com.hediwen.burp.idor 下）"]
+        ENTRY["IdorDetectorExtension<br/>入口：注册扫描检查与配置面板"]
+        PANEL["ui/ConfigPanel<br/>Swing 配置面板<br/>含实时状态提示"]
+        CHECK["core/IdorScanCheck<br/>被动扫描主体<br/>前置条件 + 重放 + 限速"]
+        HEUR["core/ParamHeuristics<br/>ID 参数识别<br/>命名模式 + 值形态双维度"]
+        CMP["core/ResponseComparator<br/>响应标准化 + 相似度 + 三态判定"]
+        CFG["config/DetectorConfig<br/>配置模型<br/>含「默认不发请求」的安全设计"]
+        CRED["config/CredentialProfile<br/>第二身份凭据<br/>含脱敏"]
+    end
+
+    subgraph TARGET["目标服务端"]
+        APP["被测试的应用"]
+    end
+
+    API --> ENTRY
+    ENTRY --> CHECK
+    ENTRY --> PANEL
+
+    PANEL --> CFG
+    PANEL --> CRED
+
+    CHECK --> HEUR
+    CHECK --> CMP
+    CHECK --> CFG
+    CHECK --> CRED
+
+    CHECK -- "① 基准<br/>② 换身份重放<br/>③ 对照请求" --> APP
+```
+
+**分层意图**：
+
+- `core/` 是纯逻辑（参数识别、响应对比），**不依赖 Burp 运行时** ——
+  所以能脱离 Burp 单独跑单元测试（81 个测试里绝大多数属于这一层）
+- `config/` 承载状态与安全默认值，UI 和扫描逻辑都读它
+- `ui/` 只负责配置，不碰扫描逻辑
+
+这样做的好处是：**插件的行为如果只能在 Burp 里手工验证，就等于没有回归保护。**
+把纯逻辑剥出来单测，是不让它退化的唯一办法。
+
+---
+
+## 三态对比的判定表
+
+| R1 vs R0<br/>（换身份后） | R2 vs R0<br/>（对照请求） | 结论 | 说明 |
+|---|---|---|---|
+| 相似 | **不相似** | **疑似越权** | 资源真实存在，且服务端没校验归属 |
+| 相似 | **相似** | 误报，丢弃 | 该接口对任何 ID 都返回固定内容 |
+| 不相似 | 任意 | 权限校验有效 | 第二身份被正确拦截 |
+
+---
+
 ## 检测原理：三态对比
 
 光判断「换个身份还能看到同样的内容」是不够的 —— 因为**公开资源本来谁都能看**。

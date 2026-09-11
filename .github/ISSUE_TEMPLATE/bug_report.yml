@@ -1,0 +1,84 @@
+name: Bug 报告
+description: 报告一个可复现的问题
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请尽量填完整 —— 尤其是 **Burp 版本** 和 **原始报错**。
+
+        > ⚠️ **凭据泄漏、未授权请求等安全类问题，请走 [SECURITY.md](../blob/main/SECURITY.md) 的私下渠道**，不要开公开 issue。
+
+  - type: input
+    id: burp-version
+    attributes:
+      label: Burp Suite 版本
+      description: |
+        **这一项很关键** —— 插件依赖 Montoya API，
+        而 Burp 版本决定 API 版本。带 Community / Professional 也请注明。
+      placeholder: "例如：Burp Suite Professional 2026.7"
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: 插件版本
+      description: Release 页面的 tag，或 `git rev-parse --short HEAD`
+      placeholder: "例如：v0.1.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: 插件配置状态
+      description: |
+        出问题时**当前是哪种运行模式** —— 这直接决定插件会不会发请求。
+      value: |
+        - 主动重放：已启用 / 未启用
+        - 第二身份：已配置 / 未配置
+        - 对照请求：开启 / 关闭
+        - 相似度阈值：
+        - 是否设置了 host 范围：
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: |
+        具体到可以直接照做。
+        如果能说明**目标应用的形态**（前后端分离 / 传统 Web / API）会很有帮助。
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+      description: |
+        **请粘贴 Burp 的 Extensions → Output 面板里的原始输出。**
+        插件会把每次检测的判定结果（含相似度数值）打印在那里，
+        那些数字是定位问题的关键线索。
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: stacktrace
+    attributes:
+      label: 异常堆栈（如果有）
+      description: Extensions → Errors 面板里的内容
+      render: shell
+    validations:
+      required: false

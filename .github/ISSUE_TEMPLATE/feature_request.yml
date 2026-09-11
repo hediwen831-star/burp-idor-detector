@@ -1,0 +1,67 @@
+name: 功能建议
+description: 建议新增检测能力或改进现有行为
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提建议前先看一眼 [README 的「明确不做的事」](../blob/main/README.md#与现有工具的关系) ——
+        有些东西是**刻意不做**的（比如写接口的检测），不是遗漏。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你遇到的实际问题
+      description: |
+        **请描述问题，而不是直接描述方案。**
+
+        例如「我需要测 GraphQL 接口的越权，但插件解析不到嵌套查询里的 ID」
+        比「请支持 GraphQL」有用得多。
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 你希望的方案
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 现在是怎么绕过去的
+      description: 包括用别的工具（Autorize 等）的体验对比
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 涉及哪部分
+      multiple: true
+      options:
+        - ID 参数识别（ParamHeuristics）
+        - 响应对比 / 相似度算法（ResponseComparator）
+        - 检测流程（IdorScanCheck）
+        - 误报控制（对照请求）
+        - 配置面板（UI）
+        - 协议支持（WebSocket / GraphQL 等）
+        - 结果输出 / 导出
+        - 文档
+        - 其他
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: 安全性确认
+      description: |
+        这个插件对目标有实际影响，所以新功能必须过这一关。
+      options:
+        - label: 我的建议不会让插件**默认**就自动发请求（默认必须是「仅被动观察」）
+          required: true
+        - label: 我的建议不会让插件对写接口（POST / PUT / DELETE）发请求
+          required: true

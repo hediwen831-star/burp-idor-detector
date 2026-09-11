@@ -1,0 +1,11 @@
+# Issue 模板配置
+blank_issues_enabled: false
+
+contact_links:
+  - name: 安全类问题（凭据泄漏 / 未授权请求等）
+    url: https://github.com/hediwen831-star/burp-idor-detector/security/advisories/new
+    about: 请走私下渠道。这类问题被公开后，正在使用的人会立即处于风险中
+
+  - name: 使用问题 / 判定逻辑讨论
+    url: https://github.com/hediwen831-star/burp-idor-detector/discussions
+    about: 对某个判定结果有疑问？想讨论三态对比的设计？来讨论区

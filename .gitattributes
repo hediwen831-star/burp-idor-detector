@@ -1,0 +1,41 @@
+# 统一行尾策略。
+#
+# 为什么 Java 项目也需要这个文件：
+#   1. 仓库在 Windows 上开发，而构建/CI 跑在 Linux ——
+#      shell 脚本一旦变成 CRLF，在 Linux 上直接报
+#      "/usr/bin/env: 'bash\r': No such file or directory"，
+#      而且这个报错很难联想到是行尾问题
+#   2. 不同人配的 core.autocrlf 不一样时，整个仓库会显示「全部文件被修改」
+#
+# 显式声明之后，行尾由仓库决定，不再依赖每个人的本地 git 配置。
+
+* text=auto eol=lf
+
+# ── 源码与配置 ──
+*.java      text eol=lf
+*.xml       text eol=lf
+*.md        text eol=lf
+*.yaml      text eol=lf
+*.yml       text eol=lf
+*.json      text eol=lf
+*.properties text eol=lf
+*.txt       text eol=lf
+
+# ── 脚本 ──
+# Shell 脚本必须 LF，否则 Linux 上无法执行
+*.sh        text eol=lf
+# Windows 批处理必须 CRLF
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+
+# ── 二进制（不做行尾转换，否则文件会被损坏）──
+*.jar       binary
+*.class     binary
+*.png       binary
+*.jpg       binary
+*.ico       binary
+*.zip       binary
+
+# ── 构建产物不参与语言统计 ──
+target/**   linguist-generated
+*.jar       linguist-generated

@@ -208,9 +208,21 @@ public final class ResponseComparator {
         }
 
         if (!a.contentType().isEmpty() && a.contentType().equals(b.contentType())) {
+            // 两边都有且相同 —— 满分
+            score += 0.1;
+        } else if (a.contentType().isEmpty() && b.contentType().isEmpty()) {
+            // 两边都没有 Content-Type：无法比较，但**这也不构成"不同"的证据**。
+            //
+            // 这里曾经给 0.05（一半分），与"不因此扣分"的注释自相矛盾。
+            // 后果很实在：两个**完全相同**的响应（都是裸体 API）相似度上限
+            // 只有 0.95，永远到不了 1.0。默认阈值 0.85 时看不出来，
+            // 但阈值一旦调到 0.95 以上，就会出现「完全相同的响应被判为不相似」。
+            //
+            // 边界测试 test_nullBodyIsSafe 抓到了这个不一致。
             score += 0.1;
         } else if (a.contentType().isEmpty() || b.contentType().isEmpty()) {
-            // 一方没有 Content-Type，不因此扣分（信息不足）
+            // 只有一方有 Content-Type —— 信息不足，给一半分。
+            // 既不像"两边都有且相同"那样确定，也不像"两边不同"那样构成反证。
             score += 0.05;
         }
 

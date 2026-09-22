@@ -11,10 +11,10 @@ mvn -s maven-settings.xml clean package
 
 需要 **JDK 21+**。
 
-> `maven-settings.xml` 配了阿里云镜像 —— 国内直连 Maven Central 很慢。
-> 如果你的网络环境直连够快，用默认设置即可：`mvn clean package`。
->
-> **注意：这个文件不能用于 CI** —— 它写死了本机的 `localRepository` 路径。
+`maven-settings.xml` 配了阿里云镜像，因为国内直连 Maven Central 很慢。
+如果网络环境直连够快，用默认设置即可：`mvn clean package`。
+
+该文件不能用于 CI，它写死了本机的 `localRepository` 路径。
 
 ## 提交前必须跑
 
@@ -73,7 +73,7 @@ javap -cp montoya-api.jar burp.api.montoya.scanner.scancheck.PassiveScanCheck
 Burp 扩展跑在使用者的 Burp 进程里 —— 多一个依赖就多一份版本冲突和体积负担。
 JSON 解析、HTTP 客户端这些 Burp 都提供了，其余用 JDK 标准库足够。
 
-**目前是零第三方运行时依赖，请保持。**
+目前是零第三方运行时依赖，请保持。
 
 ### 4. core/ 层必须能脱离 Burp 单测
 

@@ -13,6 +13,21 @@
 
   <name>Burp IDOR Detector</name>
   <description>越权（IDOR）自动化检测插件 —— 用第二身份重放请求并对比响应</description>
+  <url>https://github.com/hediwen831-star/burp-idor-detector</url>
+
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/hediwen831-star/burp-idor-detector</url>
+    <connection>scm:git:https://github.com/hediwen831-star/burp-idor-detector.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/hediwen831-star/burp-idor-detector.git</developerConnection>
+  </scm>
 
   <properties>
     <maven.compiler.release>21</maven.compiler.release>

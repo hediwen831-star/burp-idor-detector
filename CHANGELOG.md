@@ -23,6 +23,13 @@
   带 charset 的 Content-Type、头大小写差异、空正文下 302 与 200 的区分、
   同一状态码类的部分给分、阈值比较包含等号、三态输入完全相同须判为通配响应。
 
+### 变更
+
+- CI 使用的 `actions/setup-java` 由 `v4` 升到 `v6`。上游已将 v1~v4 标记为废弃，
+  继续使用会在每次构建时输出废弃警告。本工作流用到的 `distribution: temurin`、
+  `java-version` 与 `cache: maven` 三项在 v6 中写法不变；差异在于设置 `cache`
+  之后下载的 JDK 会被一并缓存（如需关闭用 `cache-jdk: false`）。
+
 ## [0.1.0] - 2026-09-18
 
 ### 新增

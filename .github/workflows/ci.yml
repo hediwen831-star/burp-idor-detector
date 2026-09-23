@@ -22,7 +22,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: 安装 JDK ${{ matrix.java }}
-        uses: actions/setup-java@v4
+        # v1~v4 已废弃，用当前大版本 v6。
+        # v6 相对 v4 对本工作流无影响：temurin / java-version / cache: maven 写法不变，
+        # 只是设置 cache 后会额外把下载的 JDK 一起缓存（想关掉用 cache-jdk: false）。
+        uses: actions/setup-java@v6
         with:
           java-version: ${{ matrix.java }}
           distribution: temurin

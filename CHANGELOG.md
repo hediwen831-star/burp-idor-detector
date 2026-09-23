@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-23
+
 ### 修复
 
 - 相似度计算中 Content-Type 一档与注释描述的语义不一致。两侧都没有
@@ -25,6 +27,7 @@
 
 ### 变更
 
+- 测试数 81 → 94，新增的 13 条是 `ResponseComparatorBoundaryTest` 的边界用例。
 - CI 使用的 `actions/setup-java` 由 `v4` 升到 `v6`。上游已将 v1~v4 标记为废弃，
   继续使用会在每次构建时输出废弃警告。本工作流用到的 `distribution: temurin`、
   `java-version` 与 `cache: maven` 三项在 v6 中写法不变；差异在于设置 `cache`
@@ -94,5 +97,6 @@ R1 ≉ R0             →  权限校验有效
   而 `withPath("")` 会构造出非法请求。同一错误在 `pathAndQueryOf` 与
   `ParsedRequest.parse` 中各有一处。
 
-[Unreleased]: https://github.com/hediwen831-star/burp-idor-detector/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/hediwen831-star/burp-idor-detector/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/hediwen831-star/burp-idor-detector/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/hediwen831-star/burp-idor-detector/releases/tag/v0.1.0

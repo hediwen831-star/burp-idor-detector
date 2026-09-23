@@ -3,7 +3,7 @@
 [![CI](https://github.com/hediwen831-star/burp-idor-detector/actions/workflows/ci.yml/badge.svg)](https://github.com/hediwen831-star/burp-idor-detector/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/hediwen831-star/burp-idor-detector?color=blue)](https://github.com/hediwen831-star/burp-idor-detector/releases)
 [![Java](https://img.shields.io/badge/java-21-orange?logo=openjdk&logoColor=white)](https://adoptium.net/)
-[![Tests](https://img.shields.io/badge/tests-81%20passed-brightgreen)](#项目结构)
+[![Tests](https://img.shields.io/badge/tests-94%20passed-brightgreen)](#项目结构)
 [![Montoya API](https://img.shields.io/badge/Montoya%20API-2026.7-purple)](https://portswigger.net/burp/extensibility)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -215,12 +215,12 @@ flowchart TB
 ### 方式一：下载预编译 jar
 
 从 [Releases](https://github.com/hediwen831-star/burp-idor-detector/releases) 下载
-`idor-detector-0.1.0.jar`，然后：
+`idor-detector-0.1.1.jar`，然后：
 
 ```
 Burp Suite → Extensions → Installed → Add
   Extension type: Java
-  Extension file: idor-detector-0.1.0.jar
+  Extension file: idor-detector-0.1.1.jar
 ```
 
 ### 方式二：自己编译
@@ -229,7 +229,7 @@ Burp Suite → Extensions → Installed → Add
 git clone https://github.com/hediwen831-star/burp-idor-detector.git
 cd burp-idor-detector
 mvn -s maven-settings.xml clean package
-# 产物：target/idor-detector-0.1.0.jar
+# 产物：target/idor-detector-0.1.1.jar
 ```
 
 构建需要 JDK 21+。`maven-settings.xml` 里配了阿里云镜像 ——

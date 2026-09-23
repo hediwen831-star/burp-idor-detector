@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 越权（IDOR）被动检测。
@@ -71,6 +72,9 @@ public class IdorScanCheck implements PassiveScanCheck {
     /** 每个 host 上次发请求的时间戳，用于限速。 */
     private final Map<String, Long> lastRequestAt = new ConcurrentHashMap<>();
 
+    /** 「检测未启用」只提示一次，避免未开启时把日志刷满。 */
+    private final AtomicBoolean loggedNotReady = new AtomicBoolean(false);
+
     public IdorScanCheck(MontoyaApi api, DetectorConfig config) {
         this.api = api;
         this.config = config;
@@ -97,6 +101,12 @@ public class IdorScanCheck implements PassiveScanCheck {
     private AuditResult check(HttpRequestResponse base) {
         // ── 前置条件 1、2：配置是否就绪 ─────────────────────────────
         if (!config.canDetect()) {
+            // 只在第一次提示，避免未启用时刷屏
+            if (loggedNotReady.compareAndSet(false, true)) {
+                api.logging().logToOutput(
+                        "[IDOR Detector] 检测未启用 —— 需要同时满足「已启用主动重放」与"
+                                + "「第二身份已配置」。当前所有请求只做观察，不会重放。");
+            }
             return AuditResult.auditResult();
         }
         if (base == null || !base.hasResponse()) {
@@ -115,12 +125,21 @@ public class IdorScanCheck implements PassiveScanCheck {
         // ── 前置条件 4：host 范围 ──────────────────────────────────
         String host = request.httpService() == null ? "" : request.httpService().host();
         if (!config.isHostInScope(host)) {
+            api.logging().logToOutput(String.format(
+                    "[IDOR Detector] 跳过 %s —— host %s 不在检测范围内（检查「范围控制」配置）。",
+                    request.url(), host));
             return AuditResult.auditResult();
         }
 
         // ── 提取候选参数 ───────────────────────────────────────────
         ParsedRequest parsed = ParsedRequest.parse(request.url(), request.bodyToString());
         if (parsed.candidates().isEmpty()) {
+            api.logging().logToOutput(String.format(
+                    "[IDOR Detector] 跳过 %s %s —— 未识别出「像资源标识」的参数"
+                            + "（本次解析到的参数: %s）。只有名字像 ID（id/uid/order_id…）"
+                            + "且值形态为数字/UUID/短标识符的参数才会被重放。",
+                    method, parsed.path(),
+                    parsed.parameters().isEmpty() ? "无" : String.join(", ", parsed.parameters().keySet())));
             return AuditResult.auditResult();
         }
 
